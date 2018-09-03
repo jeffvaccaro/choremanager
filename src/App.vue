@@ -1,19 +1,40 @@
 <template>
   <div id="app">
     <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <Intro msg="Introduction to ChoreManager"/>
+    <Family msg="Build your Family"/>
+    <AddChores msg="Add your Chores"/>
+    <AssignChores msg="Assign your Chores"/>
+    <Calendar msg="Generate your Calendar"/>
+    <NavBar msg="Navigation for ChoreManager"/>    
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
 
+import Intro from './components/Intro.vue'
+import Family from './components/BuildFamily.vue'
+import AddChores from './components/AddChores.vue'
+import AssignChores from './components/AssignChores.vue'
+import Calendar from './components/Calendar.vue'
+import NavBar from './components/NavBar.vue'
+
+const axios = require('axios');
 export default {
   name: 'app',
   components: {
-    HelloWorld
+    NavBar,
+    Intro,
+    Family,
+    AddChores,
+    AssignChores,
+    Calendar
+  },
+  mounted: function () {
+    var vm = this
   }
 }
+
 </script>
 
 <style>
@@ -22,7 +43,7 @@ export default {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  color: #FF6600;
   margin-top: 60px;
 }
 </style>
