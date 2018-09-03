@@ -26,11 +26,6 @@ const connectionString = "server=(LocalDb)\\MSSQLLocalDB;Database=Chore;Trusted_
 //     res.sendFile('index.html', {root: __dirname});
 // });
 
-// app.get('/test',function(req,res){
-//     //res.send('Test Page');
-//     res.sendFile('test.html', {root: __dirname});
-// });
-
 app.get('/getChores', function(req,res){
     var data = {
         "Data":""
