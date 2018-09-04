@@ -19,7 +19,6 @@ import AssignChores from './components/AssignChores.vue'
 import Calendar from './components/Calendar.vue'
 import NavBar from './components/NavBar.vue'
 
-const axios = require('axios');
 export default {
   name: 'app',
   components: {
@@ -31,7 +30,7 @@ export default {
     Calendar
   },
   mounted: function () {
-    var vm = this
+    //var vm = this
   }
 }
 

@@ -67,12 +67,12 @@
         </div>             
     </div>
 </template>
+
 <script>
-    module.exports = {
-        data: function () {
-            return {
-                greeting: 'Hello'
-            }
-        }
-    }
-</script>
+export default {
+  name: 'Family',
+  props: {
+    msg: String
+  }
+}
+</script>   
