@@ -32,7 +32,7 @@ app.get('/getChores', function(req,res){
     };
 
 	try {
-		var query = "SELECT ChoreId, ChoreName FROM [Chores] ORDER BY ChoreName ASC";
+		var query = "SELECT ChoreId, ChoreName FROM [Chores] ORDER BY ChoreId, ChoreName ASC";
 		sql.query(connectionString, query, (err, rows) => {
             data["Data"] = rows;
             res.json(data);

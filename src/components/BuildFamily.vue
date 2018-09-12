@@ -12,12 +12,13 @@
                                 </span>
                                 Build your Family!
                             </h2>
-                            <h3>
-                                Here is Step 1!  You can add or remove people to assign the chores to.  With the subscribed version you can add 
-                                and save all of your kids as well as more features like sending them texts when new chores have been assigned!
-                            </h3>
+                            <h3>Here is Step 1!  You can add or remove people to assign the chores to.  
+                                If you register, you can build your family, assign the chores and build a monthly calendar.  
+                                Registered users will get more features as they become available.</h3>
                             <br/>
-                            <h5>Coming Soon: Text Message your childs chores to them for the week!</h5>
+                            <h5>You can also use the app as a guest, however, you won't be able to save your family, chores or assignments & the calendar will only be for 1 week.</h5>
+                            <br/>
+                            <h5>Coming Soon: Text Messaging!</h5>
                         </div>
                     </div>
                 </div>
@@ -31,24 +32,51 @@
 
         <div class="row clearfix">
             <div class="col-md-6 column">
-                <form role="form">
-                    <div class="form-group text-left">
-                        <label for="inputName">Name</label><input class="form-control" id="inputName" type="text"/>
+                <div class="card">
+                    <div class="card-body">
+                        <form role="form">
+                            <div class="form-group text-left">
+                                <h4><label for="familyName">Family Name</label></h4>
+                                <input class="form-control" id="familyName" type="text" v-model="familyName"/>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <label class="input-group-text" for="memberName">Name</label>
+                                </div>                             
+                                <input type='text' class="form-control" id='memberName' v-model="memberName" size="50" :disabled="familyName === ''">
+                                <div class="input-group-append">
+                                    <label class="input-group-text" for="chkIsParent">Is this a parent?</label>
+                                </div>
+                                <input class="form-control col-sm-1" type="checkbox" id="chkIsParent"  :disabled="familyName === ''"  v-model="isParent" />
+                            </div>                    
+                            <br/>
+                            <button type="button" class='btn btn-default btn-outline-primary float-right' v-on:click="addFamilyMemberRow()">
+                                <i class="fas fa-plus-square fa-2x align-middle" aria-hidden="true"></i>
+                                &nbsp;&nbsp;&nbsp;<span class="align-middle">Add Family Member</span>
+                            </button>                    
+                        </form>
                     </div>
-                    <button class="btn btn-default float-right" type="button" onclick="addFamilyRow();">Add Family Member</button>
-                </form>
+                </div>
             </div>
             <div class="col-md-6 column">
                 <div class="card">
                     <div class="card-body">
                         <h4 class="card-title text-left">
-                            Family
+                            Family: {{familyName}}
                         </h4>
                         <table class="table table-striped card-text" id="tblFamily">
-                            <tr id="row-family-id-0">
+                            <tr>
                                 <th>Name</th>
-                                <th>Cell Phone #</th>
                                 <th align="center">Remove</th>
+                            </tr>
+                            <tr v-for="addFamilyMemberRow in addFamilyRowArray" :key="addFamilyMemberRow.arrIndex">
+                                <td>{{addFamilyMemberRow.familyMemberName}}</td>
+                                <td>
+                                    <button type="button" class='btn btn-default btn-outline-primary'  v-on:click="removeFamilyRow(addFamilyMemberRow.arrIndex)">
+                                        <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                                    </button>                                          
+                                </td>
                             </tr>
                         </table>
                         <hr/>
@@ -70,9 +98,28 @@
 
 <script>
 export default {
-  name: 'Family',
-  props: {
-    msg: String
+  name: 'BuildFamily',
+  data: function() {
+    return {
+        familyName:'',
+        memberName:'',
+        isParent:'',
+        addFamilyRowIndex:0,
+        addFamilyRowArray:[]
+    };
+  },
+   methods: {
+        addFamilyMemberRow: function(){
+            var vm = this;
+            vm.addFamilyRowIndex = vm.addFamilyRowIndex + 1;
+            
+            var addFamilyMemberRowObj = {
+                arrIndex: vm.addFamilyRowIndex,
+                familyMemberName: vm.memberName
+            }
+
+            vm.addFamilyRowArray.push(addFamilyMemberRowObj);
+        }      
   }
 }
 </script>   

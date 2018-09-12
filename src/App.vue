@@ -2,7 +2,7 @@
   <div id="app">
     <img alt="Vue logo" src="./assets/logo.png">
     <Intro msg="Introduction to ChoreManager"/>
-    <Family msg="Build your Family"/>
+    <BuildFamily msg="Build your Family"/>
     <AddChores msg="Add your Chores"/>
     <AssignChores msg="Assign your Chores"/>
     <Calendar msg="Generate your Calendar"/>
@@ -13,7 +13,7 @@
 <script>
 
 import Intro from './components/Intro.vue'
-import Family from './components/BuildFamily.vue'
+import BuildFamily from './components/BuildFamily.vue'
 import AddChores from './components/AddChores.vue'
 import AssignChores from './components/AssignChores.vue'
 import Calendar from './components/Calendar.vue'
@@ -24,7 +24,7 @@ export default {
   components: {
     NavBar,
     Intro,
-    Family,
+    BuildFamily,
     AddChores,
     AssignChores,
     Calendar
