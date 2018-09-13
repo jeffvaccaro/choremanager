@@ -110,7 +110,10 @@
         </div>                      
     </div>
 </template>
+
 <script>
+import { serverBus } from '../main';
+
 export default {
   name: 'AddChores',
   data: function() {
@@ -186,11 +189,13 @@ export default {
 
           vm.addChoreRowArray.push(addChoreRowObj);
           vm.customChoreValue = '';
+          serverBus.$emit('choresArr', vm.addChoreRowArray);
       },
       removeChoreRow: function(indexVal){
         var vm = this;
         //alert(indexVal);
         vm.addChoreRowArray = vm.addChoreRowArray.filter((item) => item.arrIndex !== indexVal);
+        serverBus.$emit('choresArr', vm.addChoreRowArray);
       },
       dailyChoreCheck: function(selectedChoreId){
             var vm = this;

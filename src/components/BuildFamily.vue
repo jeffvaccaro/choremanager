@@ -44,7 +44,7 @@
                                 <div class="input-group-prepend">
                                     <label class="input-group-text" for="memberName">Name</label>
                                 </div>                             
-                                <input type='text' class="form-control" id='memberName' v-model="memberName" size="50" :disabled="familyName === ''">
+                                <input type='text' class="form-control" id='memberName'  ref='memberName' v-model="memberName" size="50" :disabled="familyName === ''">
                                 <div class="input-group-append">
                                     <label class="input-group-text" for="chkIsParent">Is this a parent?</label>
                                 </div>
@@ -68,20 +68,25 @@
                         <table class="table table-striped card-text" id="tblFamily">
                             <tr>
                                 <th>Name</th>
-                                <th align="center">Remove</th>
+                                <th></th>
+                                <th align="center">Edit | Remove</th>
                             </tr>
                             <tr v-for="addFamilyMemberRow in addFamilyRowArray" :key="addFamilyMemberRow.arrIndex">
                                 <td>{{addFamilyMemberRow.familyMemberName}}</td>
+                                <td><i class="far fa-star" v-show="addFamilyMemberRow.isParent == true"></i></td>
                                 <td>
+                                    <button type="button" class='btn btn-default btn-outline-primary'  v-on:click="editFamilyMemberRow(addFamilyMemberRow.arrIndex)">
+                                        <i class="fas fa-edit"></i> 
+                                    </button>&nbsp;&nbsp;&nbsp;
                                     <button type="button" class='btn btn-default btn-outline-primary'  v-on:click="removeFamilyRow(addFamilyMemberRow.arrIndex)">
-                                        <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                                        <i class="fas fa-trash-alt"></i>
                                     </button>                                          
                                 </td>
                             </tr>
                         </table>
                         <hr/>
                         <span class="card-title">
-                        <button class="btn btn-default float-left" type="button" onclick="saveFamily();">Save Family Locally!</button>&nbsp;&nbsp;&nbsp;<span id="siteFamilyMessage"></span>                        
+                        <button class="btn btn-default btn-outline-primary float-left" type="button" onclick="saveFamily();">Save Family Locally!</button>&nbsp;&nbsp;&nbsp;<span id="siteFamilyMessage"></span>                        
                         </span>
                     </div>
                 </div>
@@ -97,6 +102,7 @@
 </template>
 
 <script>
+import { serverBus } from '../main';
 export default {
   name: 'BuildFamily',
   data: function() {
@@ -104,6 +110,8 @@ export default {
         familyName:'',
         memberName:'',
         isParent:'',
+        editArrIndex:0,
+        isEdit: false,
         addFamilyRowIndex:0,
         addFamilyRowArray:[]
     };
@@ -111,15 +119,43 @@ export default {
    methods: {
         addFamilyMemberRow: function(){
             var vm = this;
-            vm.addFamilyRowIndex = vm.addFamilyRowIndex + 1;
-            
+                        
             var addFamilyMemberRowObj = {
                 arrIndex: vm.addFamilyRowIndex,
-                familyMemberName: vm.memberName
+                familyMemberName: vm.memberName,
+                isParent: vm.isParent
             }
 
-            vm.addFamilyRowArray.push(addFamilyMemberRowObj);
-        }      
+            if(vm.isEdit === false){
+                vm.addFamilyRowArray.push(addFamilyMemberRowObj);
+                vm.addFamilyRowIndex = vm.addFamilyRowIndex + 1;
+            }else{
+                vm.addFamilyRowArray[vm.editArrIndex].familyMemberName = vm.memberName;
+                vm.addFamilyRowArray[vm.editArrIndex].isParent = vm.isParent;
+                vm.isEdit = false;
+                vm.editArrIndex = 0;
+            }
+
+            vm.memberName = "";
+            vm.isParent = false;
+            serverBus.$emit('familyArr', vm.addFamilyRowArray); 
+            vm.$refs.memberName.focus();
+        },
+        editFamilyMemberRow: function(arrIndex){
+            var vm = this;
+            vm.isEdit = true;
+            vm.editArrIndex = arrIndex;
+
+            var memberObj = vm.addFamilyRowArray.find(item => item.arrIndex === arrIndex);
+            vm.memberName = memberObj.familyMemberName;
+            vm.isParent = memberObj.isParent;
+        },
+        removeFamilyRow: function(arrIndex){
+            var vm = this;
+            vm.addFamilyRowArray = vm.addFamilyRowArray.filter((item) => item.arrIndex !== arrIndex);
+            serverBus.$emit('familyArr', vm.addFamilyRowArray);
+      },        
+
   }
 }
 </script>   
