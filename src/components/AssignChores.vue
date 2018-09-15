@@ -25,15 +25,19 @@
                     <div class="card-body">
                         <div class="form-group text-left">
                             <h4>{{choreItem.choreName}}</h4>
-                            <button class='btn btn-default btn-outline-primary float-left' type="button">{{choreItem.dayName}} <i v-show="choreItem.isRepeat === true" class="fas fa-redo-alt"></i></button>
+                            <button class='btn btn-default btn-outline-primary float-left col-md-12' type="button">{{choreItem.dayName}} <i v-show="choreItem.isRepeat === true" class="fas fa-redo-alt"></i></button>
                             <br/><br/><br/>
                         </div>
                         <div class="input-group" v-for="familyMember in familyArr" :key="familyMember.arrIndex">
-                            <div class="input-group-prepend">
-                                <h5><label class="input-group-text" for="chkAssign">Assign to:</label></h5>
+                            <div class="input-group-prepend  col-md-4">
+                                <h6 v-if="assignedCheck(choreItem.arrIndex,familyMember.arrIndex) === true"><label class="input-group-text bg-primary text-white" for="chkAssign">Assigned:</label></h6>
+                                <h6 v-else><label class="input-group-text bg-light text-black" for="chkAssign">Assign to:</label></h6>
                             </div>
-                            <input type='text' class="form-control" id='memberName' disabled=true v-bind:value="familyMember.familyMemberName">
-                            <input type='checkbox' class="form-control">
+                            <div class="input-group-append col-md-7">
+                                <label class="form-control border-primary" v-if="assignedCheck(choreItem.arrIndex,familyMember.arrIndex) === true">{{familyMember.familyMemberName}}</label>
+                                <label class="form-control" v-else>{{familyMember.familyMemberName}}</label>
+                            </div>
+                            <input type='checkbox' class="form-control col-md-1" v-on:click="assignChores(choreItem.arrIndex,familyMember.arrIndex)">
                         </div>                          
                     </div>
                 </div>
@@ -46,21 +50,51 @@
 <script>
 import { serverBus } from '../main';
 export default {
-  name: 'AssignChores',
- data: function () {
-  return {
-   choresArr: [],
-   familyArr: [],
-  }
+    name: 'AssignChores',
+    data: function () {
+    return {
+        choresArr: [],
+        familyArr: [],
+        assignedChoresArr: [],
+        assignedChoresRowIndex: 0
+    }
  },
- created() {
+ created: function() {
   // Using the service bus
-  serverBus.$on('choresArr', (choresArr) => {
-   this.choresArr = choresArr;
-  });
-   serverBus.$on('familyArr', (familyArr) => {
-   this.familyArr = familyArr.filter((item)=>item.isParent!==true);
-  }); 
- }
+    serverBus.$on('choresArr', (choresArr) => {
+        this.choresArr = choresArr;
+    });
+    serverBus.$on('familyArr', (familyArr) => {
+        this.familyArr = familyArr.filter((item)=>item.isParent!==true);
+    }); 
+ },
+   methods: {
+    assignChores: function(choreIndx, memberIndx){
+        var vm = this;
+        var found = vm.assignedChoresArr.filter(obj => obj.choreIndex == choreIndx && obj.memberIndex == memberIndx)
+        if(found.length == 0){
+        var comboObj = {
+            arrIndex: vm.assignedChoresRowIndex,
+            choreIndex: choreIndx,
+            memberIndex: memberIndx
+        }
+        vm.assignedChoresArr.push(comboObj);
+        vm.assignedChoresRowIndex = vm.assignedChoresRowIndex + 1;
+        }else{
+        var removeIndex = vm.assignedChoresArr.map(function(item) { return item.arrIndex; })
+                            .indexOf(found[0].arrIndex);
+        ~removeIndex && vm.assignedChoresArr.splice(removeIndex, 1);               
+        }
+    },
+    assignedCheck: function(choreIndx, memberIndx){
+        var vm = this;
+        var found = vm.assignedChoresArr.filter(obj => obj.choreIndex == choreIndx && obj.memberIndex == memberIndx)
+        if(found.length > 0){
+            return true;
+        }else{
+            return false;
+        }
+    }
+   }
 }
 </script>

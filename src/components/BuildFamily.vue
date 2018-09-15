@@ -122,6 +122,7 @@ export default {
                         
             var addFamilyMemberRowObj = {
                 arrIndex: vm.addFamilyRowIndex,
+                familyName: vm.familyName,
                 familyMemberName: vm.memberName,
                 isParent: vm.isParent
             }
@@ -130,6 +131,7 @@ export default {
                 vm.addFamilyRowArray.push(addFamilyMemberRowObj);
                 vm.addFamilyRowIndex = vm.addFamilyRowIndex + 1;
             }else{
+                vm.addFamilyRowArray[vm.editArrIndex].familyName = vm.familyName;
                 vm.addFamilyRowArray[vm.editArrIndex].familyMemberName = vm.memberName;
                 vm.addFamilyRowArray[vm.editArrIndex].isParent = vm.isParent;
                 vm.isEdit = false;
@@ -147,6 +149,7 @@ export default {
             vm.editArrIndex = arrIndex;
 
             var memberObj = vm.addFamilyRowArray.find(item => item.arrIndex === arrIndex);
+            vm.familyName = memberObj.familyName;
             vm.memberName = memberObj.familyMemberName;
             vm.isParent = memberObj.isParent;
         },

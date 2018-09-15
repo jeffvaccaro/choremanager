@@ -27,7 +27,7 @@
                         <form>
                             <div class="form-group text-left">
                                 <h4><label for="inputChore">Chore List:</label></h4>
-                                <select class="form-control" id="inputChore" v-model="choreValId">
+                                <select class="form-control" id="inputChore" v-model="choreValId" v-on:change="setDefaults()">
                                     <option disabled value="" class="optionvue">Select a Chore</option>
                                     <option v-for="chores in chores.Data" :key="chores.ChoreId" v-bind:value="chores.ChoreId" :disabled="dailyChoreCheck(chores.ChoreId)">{{chores.ChoreName}}</option>
                                 </select>
@@ -112,29 +112,28 @@
 </template>
 
 <script>
-import { serverBus } from '../main';
+import { serverBus } from "../main";
 
 export default {
-  name: 'AddChores',
-  data: function() {
-    return {
-      addChoreRowArray:[],
-      addChoreRowIndex: 0,
-      allowance: [],
-      allowanceVal: '',
-      allowanceValId: '',
-      choreVal: '',
-      chores:[],
-      choreValId: '',
-      
-      customChoreValue:'',
-      enableDisable: true,
-      frequency: [],
-      frequencyVal: '',
-      frequencyValId: '',
-      repeatable: ''
-      
-    };
+    name: "AddChores",
+    data: function() {
+        return {
+            addChoreRowArray: [],
+            addChoreRowIndex: 0,
+            allowance: [],
+            allowanceVal: "",
+            allowanceValId: "",
+            choreVal: "",
+            chores: [],
+            choreValId: "",
+
+            customChoreValue: "",
+            enableDisable: true,
+            frequency: [],
+            frequencyVal: "",
+            frequencyValId: "",
+            repeatable: ""
+        };
   },
   created: function() {
     axios
@@ -145,79 +144,97 @@ export default {
       .then(response => (this.frequency = response.data));
     axios
       .get("http://localhost:5000/getChores")
-      .then(response => (this.chores = response.data));      
+      .then(response => (this.chores = response.data));
   },
-   methods: {
-      toggleRepeat: function(){
-          var vm = this;
-          
-          var frequencyObj = findObjectByKey(vm.frequency.Data, 'DayId', vm.frequencyValId);
-          vm.frequencyVal = frequencyObj.Day;       
-
-        if(vm.frequencyVal != "Daily"){
-            vm.enableDisable = false;
-        }else{
-            vm.enableDisable = true;
-            vm.repeatable = '';
-        }
-      },
-      addChoreRow: function(){
-          var vm = this;
-          if(vm.customChoreValue === ""){
-            var choreObj = findObjectByKey(vm.chores.Data, 'ChoreId', vm.choreValId);
-            vm.choreVal = choreObj.ChoreName;
-            var frequencyObj = findObjectByKey(vm.frequency.Data, 'DayId', vm.frequencyValId);
-            vm.frequencyVal = frequencyObj.Day;
-            var allowanceObj = findObjectByKey(vm.allowance.Data, 'AllowanceId', vm.allowanceValId);
-            vm.allowanceVal = allowanceObj.AllowanceValue;
-          }else{
-            vm.choreVal = vm.customChoreValue;
-          }
-
-          vm.addChoreRowIndex = vm.addChoreRowIndex + 1;
-          
-          var addChoreRowObj = {
-              arrIndex: vm.addChoreRowIndex,
-              choreId: vm.choreValId,
-              choreName: vm.choreVal,
-              dayId: vm.frequencyValId,
-              dayName: vm.frequencyVal,
-              isRepeat: vm.repeatable,
-              allowanceId: vm.allowanceValId,
-              allowanceValue: vm.allowanceVal
-          }
-
-          vm.addChoreRowArray.push(addChoreRowObj);
-          vm.customChoreValue = '';
-          serverBus.$emit('choresArr', vm.addChoreRowArray);
-      },
-      removeChoreRow: function(indexVal){
+  methods: {
+    toggleRepeat: function() {
         var vm = this;
-        //alert(indexVal);
-        vm.addChoreRowArray = vm.addChoreRowArray.filter((item) => item.arrIndex !== indexVal);
-        serverBus.$emit('choresArr', vm.addChoreRowArray);
-      },
-      dailyChoreCheck: function(selectedChoreId){
-            var vm = this;
-            if(vm.addChoreRowArray.length > 0){
-                var disabledItems = vm.addChoreRowArray.filter(function(item) {
-                    return  item.choreId == selectedChoreId && item.dayName == "Daily";
-                });
+        var frequencyObj = findObjectByKey(
+            vm.frequency.Data,
+            "DayId",
+            vm.frequencyValId
+        );
+        vm.frequencyVal = frequencyObj.Day;
 
-                if(disabledItems.length > 0){
-                    return disabledItems;
-                }
+        if (vm.frequencyVal != "Daily") {
+            vm.enableDisable = false;
+        } else {
+            vm.enableDisable = true;
+            vm.repeatable = "";
+        }
+    },
+    setDefaults: function() {
+        var vm = this;
+        if(vm.frequencyValId == ""){
+            vm.frequencyValId = 1;
+        }
+        if(vm.allowanceValId == ""){
+            vm.allowanceValId = 1;
+        }
+    },
+    addChoreRow: function() {
+        var vm = this;
+        if (vm.customChoreValue === "") {
+            var choreObj = findObjectByKey(vm.chores.Data,"ChoreId",vm.choreValId);
+            vm.choreVal = choreObj.ChoreName;
+
+            var frequencyObj = findObjectByKey(vm.frequency.Data,"DayId",vm.frequencyValId);
+            vm.frequencyVal = frequencyObj.Day;
+
+            var allowanceObj = findObjectByKey(vm.allowance.Data,"AllowanceId",vm.allowanceValId);
+            vm.allowanceVal = allowanceObj.AllowanceValue;
+        } else {
+            vm.choreVal = vm.customChoreValue;
+        }
+
+        vm.addChoreRowIndex = vm.addChoreRowIndex + 1;
+
+        var addChoreRowObj = {
+            arrIndex: vm.addChoreRowIndex,
+            choreId: vm.choreValId,
+            choreName: vm.choreVal,
+            dayId: vm.frequencyValId,
+            dayName: vm.frequencyVal,
+            isRepeat: vm.repeatable,
+            allowanceId: vm.allowanceValId,
+            allowanceValue: vm.allowanceVal
+        };
+
+        vm.addChoreRowArray.push(addChoreRowObj);
+        vm.customChoreValue = "";
+
+        vm.setDefaults();
+        
+        serverBus.$emit("choresArr", vm.addChoreRowArray);
+    },
+    removeChoreRow: function(indexVal) {
+        var vm = this;
+        vm.addChoreRowArray = vm.addChoreRowArray.filter(
+            item => item.arrIndex !== indexVal
+        );
+        serverBus.$emit("choresArr", vm.addChoreRowArray);
+    },
+    dailyChoreCheck: function(selectedChoreId) {
+        var vm = this;
+        if (vm.addChoreRowArray.length > 0) {
+            var disabledItems = vm.addChoreRowArray.filter(function(item) {
+                return item.choreId == selectedChoreId && item.dayName == "Daily";
+            });
+
+            if (disabledItems.length > 0) {
+                return disabledItems;
             }
-      }
-   },
+        }
+    }
+  }
 };
 
 function findObjectByKey(array, key, value) {
-    for (var i = 0; i < array.length; i++) {
-        if (array[i][key] === value) {
-            return array[i];
-        }
+  for (var i = 0; i < array.length; i++) {
+    if (array[i][key] === value) {
+      return array[i];
     }
-    return null;
+  }
+  return null;
 }
 </script>
