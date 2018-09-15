@@ -1,5 +1,5 @@
 <template>
-    <div class="container">
+    <div class="container" id="AddChores">
         <div class="row clearfix">
             <div class="col-md-12 column">
                 <br /><br /><br />
@@ -113,7 +113,6 @@
 
 <script>
 import { serverBus } from "../main";
-
 export default {
     name: "AddChores",
     data: function() {
