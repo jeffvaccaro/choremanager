@@ -1,6 +1,8 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
+    <!-- <img 
+      alt="Vue logo" 
+      src="./assets/logo.png"> -->
     <Intro msg="Introduction to ChoreManager"/>
     <BuildFamily msg="Build your Family"/>
     <AddChores msg="Add your Chores"/>
@@ -19,8 +21,9 @@ import AssignChores from './components/AssignChores.vue'
 import Calendar from './components/Calendar.vue'
 import NavBar from './components/NavBar.vue'
 
+
 export default {
-  name: 'app',
+  name: 'App',
   components: {
     NavBar,
     Intro,
@@ -33,7 +36,6 @@ export default {
     //var vm = this
   }
 }
-
 </script>
 
 <style>

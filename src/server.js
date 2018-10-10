@@ -7,10 +7,10 @@ app.use('/src', express.static(__dirname + '/src'));
 var cors = require('cors');
 app.use(cors());
 
-const config = {
-	server: "localhost",
-	database: "Chore"
-};
+// const config = {
+// 	server: "localhost",
+// 	database: "Chore"
+// };
 const connectionString = "server=(LocalDb)\\MSSQLLocalDB;Database=Chore;Trusted_Connection=Yes;Driver={SQL Server Native Client 11.0}";
 
 //Index Route
@@ -39,7 +39,7 @@ app.get('/getChores', function(req,res){
 		});
 	} catch (err) {
 		// ... error checks
-		console.log(err)
+		//console.log(err)
 	}    
 });
 
@@ -56,7 +56,7 @@ app.get('/getAllowance', function(req,res){
 		});
 	} catch (err) {
 		// ... error checks
-		console.log(err)
+		//console.log(err)
 	}    
 });
 
@@ -73,13 +73,13 @@ app.get('/getDays', function(req,res){
 		});
 	} catch (err) {
 		// ... error checks
-		console.dir(err)
+		//console.log(err)
 	}    
 });
 
 //Port 5000
 app.listen(5000,function(){
-	console.log('Listening on port 5000');
+	//console.log('Listening on port 5000');
 });
 
 // function getUsers(){
