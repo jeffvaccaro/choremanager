@@ -1,6 +1,9 @@
 {
   "name": "choremanager",
   "version": "0.1.0",
+  "engines": {
+    "node": "8.9.3"
+  },
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
