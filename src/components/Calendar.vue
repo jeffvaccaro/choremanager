@@ -77,6 +77,7 @@ export default {
     watch: {
         assignedChores: function() {
             var vm = this;
+            $('#calendar').fullCalendar('removeEvents');
              var i = 0;
              var j = 0;
              var k = 0;

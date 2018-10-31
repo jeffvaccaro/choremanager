@@ -1,14 +1,12 @@
 <template>
   <div id="app">
-    <!-- <img 
-      alt="Vue logo" 
-      src="./assets/logo.png"> -->
     <Intro msg="Introduction to ChoreManager"/>
     <BuildFamily msg="Build your Family"/>
     <AddChores msg="Add your Chores"/>
     <AssignChores msg="Assign your Chores"/>
     <Calendar msg="Generate your Calendar"/>
-    <NavBar msg="Navigation for ChoreManager"/>    
+    <NavBar msg="Navigation for ChoreManager"/>   
+    <Modal msg="Modal"/>
   </div>
 </template>
 
@@ -20,7 +18,7 @@ import AddChores from './components/AddChores.vue'
 import AssignChores from './components/AssignChores.vue'
 import Calendar from './components/Calendar.vue'
 import NavBar from './components/NavBar.vue'
-
+import Modal from './components/dialogModal.vue'
 
 export default {
   name: 'App',
@@ -30,10 +28,17 @@ export default {
     BuildFamily,
     AddChores,
     AssignChores,
-    Calendar
+    Calendar,
+    Modal
   },
   mounted: function () {
     //var vm = this
+  },
+  methods:{
+  	showModal() {
+      let element = this.$refs.modal.$el
+      $(element).modal('show')
+    }    
   }
 }
 </script>

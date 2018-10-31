@@ -1,3 +1,4 @@
+
 <template>
 
   <nav class="navbar fixed-bottom navbar-expand-lg navbar-dark bg-dark">
@@ -65,21 +66,22 @@
             v-scroll-to="'#GenerateCalendar'">Generate Calendar</a>
         </li>                  
       </ul>
-
-      <span class="navbar-text">
-        <a 
-          class="nav-link" 
-          href="#">Register [Coming Soon!]</a>
-      </span>    
+      <span class="navbar-text" id="status"></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    
+      <div class="navbar-text fb-login-button" data-max-rows="1" data-size="large" data-button-type="continue_with" data-show-faces="false" data-auto-logout-link="true" data-use-continue-as="true"></div>
+      <div id="fb-root"></div>
+      <button class="btn btn-info" v-on:click="showModal()">show modal</button>
     </div>
   </nav>
 
 </template>           
 
 <script>
+const axios = require('axios');
 import { serverBus } from "../main";
+    
 export default {
   name: 'NavBar',
+
   data: function() {
     return {
       isIntroActive: true,
@@ -105,9 +107,9 @@ export default {
     });     
     serverBus.$on('isGenerateCalendarActive', (isGenerateCalendarActive) => {
         this.isGenerateCalendarActive = isGenerateCalendarActive;
-    });         
-  }
-  ,  
+    });      
+
+  },
   methods: {
     activity: function(menuVal){
       var vm = this;
