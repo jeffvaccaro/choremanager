@@ -12,24 +12,26 @@
 
 <script>
 
+import NavBar from './components/NavBar.vue'
 import Intro from './components/Intro.vue'
-import BuildFamily from './components/BuildFamily.vue'
 import AddChores from './components/AddChores.vue'
+
+import BuildFamily from './components/BuildFamily.vue'
 import AssignChores from './components/AssignChores.vue'
 import Calendar from './components/Calendar.vue'
-import NavBar from './components/NavBar.vue'
 import Modal from './components/dialogModal.vue'
+import $ from 'jquery';
 
 export default {
   name: 'App',
   components: {
-    NavBar,
     Intro,
+    NavBar,
     BuildFamily,
-    AddChores,
     AssignChores,
     Calendar,
-    Modal
+    Modal,
+    AddChores 
   },
   mounted: function () {
     //var vm = this
@@ -37,7 +39,7 @@ export default {
   methods:{
   	showModal() {
       let element = this.$refs.modal.$el
-      $(element).modal('show')
+      $(element).modal('show');
     }    
   }
 }

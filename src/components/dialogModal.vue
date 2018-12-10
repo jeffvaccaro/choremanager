@@ -15,11 +15,11 @@
                 Otherwise to continue as a guest select the "Guest" button. <br/><br/>
                 <hr/>
                 <div class="form-group text-left">
-                <h4><label for="familyName">Family Name</label></h4>
+                <h4><label for="txtfamilyName">Family Name</label></h4>
                 <input 
                     class="form-control" 
-                    id="familyName" 
-                    type="text" v-model="familyName">
+                    id="txtfamilyName" 
+                    type="text" v-model="familyName" autofocus>
                 </div>
             </div>
             <div class="modal-footer">
@@ -33,43 +33,117 @@
 </template>
 
 <script>
+
+$('body').on('shown.bs.modal', '.modal', function () {
+  $('[id$=txtfamilyName]').focus();
+})
+
 const axios = require('axios');
-    
+import { serverBus } from "../main";   
+import {mapState, mapGetters, mapMutations, mapActions} from 'vuex'
+//import $ from 'jquery';
+
 export default {
   name: 'Modal',
-
+  computed: {
+    ...mapGetters([
+      'getFamilyName',
+      'getFamilyId',
+      'getMemberName'
+    ]),
+  },  
   data: function() {
     return {
       fbEmail: '',
       fbID: '',
-      familyName: '',
+      fbName: '',
+      
       familyId: '',
-      logonFound: -999
+      familyName: '',
+      familyAdminId: '',
+      registrationObj: [],
+      familyObj: [],
+      addFamilyRowIndex:0,
+      addFamilyRowArray:[]      
     };
   },
   created: function() {
       this.loadFBData();
   },
+  // mounted: function() {
+  // },  
   watch: {
     fbEmail: function() {
       var vm = this;
       vm.showModal();
     },
-    logonFound: function(){
+    familyAdminId: function(){
         var vm = this;
-        if(vm.logFound != -999){
+        //alert(vm.familyAdminId["Data"]);
+        if(vm.familyAdminId["Data"] == -999){
             $('#registerModal').modal('toggle');
+        }else{
+          vm.getFamilyData();
         }
+    },
+    familyObj: function(){
+      var vm = this;
+      
+       vm.familyId = vm.familyObj["Data"][0].FamilyId;
+       vm.familyName = vm.familyObj["Data"][0].FamilyName;
+       serverBus.$emit("familyId", vm.familyId);
+       serverBus.$emit("familyName", vm.familyName);
+
+      for(var i = 0; i <= vm.familyObj["Data"].length-1;i++){
+        var addFamilyMemberRowObj = {
+            arrIndex: i,
+            familyName: vm.familyObj["Data"][i].FamilyName,
+            familyId: vm.familyId,
+            familyMemberName: vm.familyObj["Data"][i].MemberName,
+            memberId: vm.familyObj["Data"][i].MemberId,
+            isParent: vm.familyObj["Data"][i].isAdmin
+        }
+        vm.addFamilyRowArray.push(addFamilyMemberRowObj);
+      }
+      serverBus.$emit("addFamilyRowArray", vm.addFamilyRowArray);
+    },
+    registrationObj: function(){
+      var vm = this;
+      //console.log('FamilyAdminId is : ' + vm.registrationObj["Data"].FamilyAdminId);
+      vm.familyAdminId["Data"] = vm.registrationObj["Data"].FamilyAdminId;
+      this.setFamilyId(vm.registrationObj["Data"].FamilyAdminId);
     }
   },
   methods: {
+    ...mapMutations(['SET_FAMILY_NAME']),
+    ...mapMutations(['SET_FAMILY_ID']),
+    ...mapMutations(['SET_MEMBER_NAME']),
+    ...mapActions(['setFamilyName']),
+    ...mapActions(['setFamilyId']),
+    ...mapActions(['setMemberName']),  
+
     showModal() {
       var vm = this;
-
       axios
         .get("http://localhost:5000/hasLogin?id="+ vm.fbID)
-        .then(response => (vm.logonFound = response.data[0]['rowcount']));    
-     
+        .then(response => (vm.familyAdminId = response.data));    
+    },
+    getFamilyData: function(){
+      var vm = this;
+      axios
+        .get("http://localhost:5000/getFamily?id="+ vm.familyAdminId["Data"])
+        .then(response => (vm.familyObj = response.data));
+    },      
+    registerAccount: function() {
+      var vm = this;
+      axios
+        .get("http://localhost:5000/addRegistration?id="+ vm.fbID + "&email=" + vm.fbEmail + "&familyName=" + vm.familyName + "&memberName=" + vm.fbName)
+        .then(response => (vm.registrationObj = response.data))
+        .then($('#registerModal').modal('toggle'))
+        .then(this.setFamilyName(this.familyName),this.setMemberName(this.fbName));
+        
+        
+        vm.familyAdminId["Data"] = '';
     },
     loadFBData: function(){
         var vm = this;
@@ -124,21 +198,9 @@ export default {
               
               vm.fbEmail = response.email;
               vm.fbID = response.id;
+              vm.fbName = response.name;
           });
         }
-    },
-    getFBData: function(){
-      var vm = this;
-     
-    },      
-    registerAccount() {
-      var vm = this;
-
-      axios
-        .get("http://localhost:5000/addRegistration?id="+ vm.fbID + "&email=" + vm.fbEmail + "&name=" + vm.familyName)
-        .then(response => (this.familyId = response.data));    
-
-      //$('#registerModal').modal('toggle');
     }
   }
 }

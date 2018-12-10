@@ -106,7 +106,7 @@
                 <td>{{ addFamilyMemberRow.familyMemberName }}</td>
                 <td><i 
                   class="far fa-star" 
-                  v-show="addFamilyMemberRow.isParent == true"/></td>
+                  v-show="addFamilyMemberRow.isParent == 'true'"/></td>
                 <td>
                   <button 
                     type="button" 
@@ -127,8 +127,11 @@
             <span class="card-title">
               <button 
                 class="btn btn-default btn-outline-primary float-left" 
-                type="button" 
-                onclick="saveFamily();">Save Family Locally!</button>&nbsp;&nbsp;&nbsp;<span id="siteFamilyMessage"/>                        
+                type="button" onclick="saveFamily();" v-show="familyId == 0">
+                Save Family Locally!
+              </button>
+                &nbsp;&nbsp;&nbsp;
+            <span id="siteFamilyMessage"/>                        
             </span>
           </div>
         </div>
@@ -144,46 +147,112 @@
 </template>
 
 <script>
+
+const axios = require('axios');
 import { serverBus } from '../main';
+import {mapState, mapGetters, mapMutations, mapActions} from 'vuex'
+
 export default {
   name: 'BuildFamily',
   data: function() {
     return {
-        familyName:'',
+        //familyName:'',
+        familyName: '',
+        familyId: 0,
         memberName:'',
+        memberId: 0,
         isParent:'',
         editArrIndex:0,
         isEdit: false,
+        returnId: [],
+        returnUpdated: '',
         addFamilyRowIndex:0,
         addFamilyRowArray:[]
     };
   },
+  computed: {
+    ...mapGetters([
+      'getFamilyName',
+      'getFamilyId'
+    ])
+  },  
+  watch: {
+    getFamilyName (newName, oldName) {
+      this.familyName = newName;
+    },
+    getFamilyId (newId, oldId) {
+      this.familyId = newId;
+    }    
+  },  
+  created: function() {
+    // Using the service bus
+      serverBus.$on('familyId', (familyId) => {
+          this.familyId = familyId;
+      });
+      serverBus.$on('familyName', (familyName) => {
+          this.familyName = familyName;
+      });   
+      serverBus.$on('addFamilyRowArray', (addFamilyRowArray) => {
+          this.addFamilyRowArray = addFamilyRowArray;
+          serverBus.$emit('familyArr', this.addFamilyRowArray); 
+          this.addFamilyRowIndex = this.addFamilyRowArray.length;
+      });            
+
+      //this.familyName = this.$store.state.familyName;
+  },
+
    methods: {
         addFamilyMemberRow: function(){
             var vm = this;
-                        
-            var addFamilyMemberRowObj = {
-                arrIndex: vm.addFamilyRowIndex,
-                familyName: vm.familyName,
-                familyMemberName: vm.memberName,
-                isParent: vm.isParent
+            try{
+              var addFamilyMemberRowObj;
+              if(vm.isEdit === false){
+                axios
+                  .get("http://localhost:5000/addMember?familyId="+ vm.familyId+"&memberName="+vm.memberName+"&isAdmin="+vm.isParent)
+                  .then(response => (vm.returnId = response.data))
+                  //.then(() => console.log(vm.returnId["Data"][0].id))
+                  .then(() => (vm.memberId =  vm.returnId["Data"][0].id))
+                  .then(() => (vm.addFamilyRowIndex = vm.addFamilyRowIndex + 1))
+                  //.then(() => console.log(vm.memberId))
+                  .then(() =>(
+                      addFamilyMemberRowObj = {
+                      arrIndex: vm.addFamilyRowIndex,
+                      familyId: vm.familyId,
+                      familyName: vm.familyName,
+                      familyMemberName: vm.memberName,
+                      memberId: vm.memberId,
+                      isParent: vm.isParent.toString()},
+                      vm.addFamilyRowArray.push(addFamilyMemberRowObj)
+                      ))
+                  .then(() => (vm.memberName = "",
+                               vm.memberId = 0
+                               ,vm.isParent = false
+                  ))
+                  .then(() =>(serverBus.$emit('familyArr', vm.addFamilyRowArray)));  
+              }else{
+                axios
+                  .get("http://localhost:5000/updateMember?memberId="+ vm.memberId+"&memberName="+vm.memberName+"&isAdmin="+vm.isParent)
+                  .then(response => (vm.returnUpdated = response.data))
+                  .then(() => (
+                    vm.addFamilyRowArray[vm.editArrIndex].familyName = vm.familyName,
+                    vm.addFamilyRowArray[vm.editArrIndex].familyId = vm.familyId,
+                    vm.addFamilyRowArray[vm.editArrIndex].familyMemberName = vm.memberName,
+                    vm.addFamilyRowArray[vm.editArrIndex].memberId = vm.memberId,
+                    vm.addFamilyRowArray[vm.editArrIndex].isParent = vm.isParent,
+                    vm.isEdit = false, 
+                    vm.editArrIndex = 0,
+                    vm.isEdit = false,
+                    vm.editArrIndex = 0,
+                    vm.memberName = "",
+                    vm.memberId = 0,
+                    vm.isParent = false                  
+                    ))
+                  .then(() => (serverBus.$emit('familyArr', vm.addFamilyRowArray))); 
+              }
+              vm.$refs.memberName.focus();
+            }catch(err) {
+              console.log(err);
             }
-
-            if(vm.isEdit === false){
-                vm.addFamilyRowArray.push(addFamilyMemberRowObj);
-                vm.addFamilyRowIndex = vm.addFamilyRowIndex + 1;
-            }else{
-                vm.addFamilyRowArray[vm.editArrIndex].familyName = vm.familyName;
-                vm.addFamilyRowArray[vm.editArrIndex].familyMemberName = vm.memberName;
-                vm.addFamilyRowArray[vm.editArrIndex].isParent = vm.isParent;
-                vm.isEdit = false;
-                vm.editArrIndex = 0;
-            }
-
-            vm.memberName = "";
-            vm.isParent = false;
-            serverBus.$emit('familyArr', vm.addFamilyRowArray); 
-            vm.$refs.memberName.focus();
         },
         editFamilyMemberRow: function(arrIndex){
             var vm = this;
@@ -193,6 +262,7 @@ export default {
             var memberObj = vm.addFamilyRowArray.find(item => item.arrIndex === arrIndex);
             vm.familyName = memberObj.familyName;
             vm.memberName = memberObj.familyMemberName;
+            vm.memberId = memberObj.memberId;
             vm.isParent = memberObj.isParent;
         },
         removeFamilyRow: function(arrIndex){

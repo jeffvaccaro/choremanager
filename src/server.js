@@ -7,10 +7,6 @@ var app = express();
 var cors = require('cors');
 	app.use(cors());
 
-	
-const sql = require('msnodesqlv8')
-const connectionString = "server=(LocalDb)\\MSSQLLocalDB;Database=Chore;Trusted_Connection=Yes;Driver={SQL Server Native Client 11.0}";
-
 const sql2 = require('mssql')
 const config = {
 	user: 'DB_95083_choremanager_user',
@@ -22,50 +18,6 @@ const config = {
     }	
 }
 
-//Port 5000
-var server = app.listen(5000,function(){
-	console.log('listening at http://%s:%s',
-	server.address().address, server.address().port);
-});
-
-
- sql2.connect(config).then(pool => {
-     return pool.request()
-    .query('SELECT ChoresId, ChoresName FROM [Chores] ORDER BY ChoresId, ChoresName ASC')
- }).then(result => {
-	 console.log(result)
- })
-
-// }).then(result => {
-//     console.log(result)
-// }).catch(err => {
-// 	// ... error checks
-// 	console.log(err);
-// })
- 
-// sql2.on('error', err => {
-// 	// ... error handler
-// 	console.log(err);
-// })
-
-var data = {
-	"Data":""
-};
-
-try {
-	var query = "SELECT ChoreId, ChoreName FROM [Chores] ORDER BY ChoreId, ChoreName ASC";
-	sql.query(connectionString, query, (err, rows) => {
-		data["Data"] = rows;
-		console.log(rows);
-	});
-} catch (err) {
-	// ... error checks
-	//console.log(err)
-}   
-
-
-
-
 
 
 app.get('/getChores', function(req,res){
@@ -73,16 +25,16 @@ app.get('/getChores', function(req,res){
         "Data":""
     };
 
-	try {
-		var query = "SELECT ChoreId, ChoreName FROM [Chores] ORDER BY ChoreId, ChoreName ASC";
-		sql.query(connectionString, query, (err, rows) => {
-            data["Data"] = rows;
-            res.json(data);
-		});
-	} catch (err) {
-		// ... error checks
-		//console.log(err)
-	}    
+	const pool1 = new sql2.ConnectionPool(config, err => {
+		// Query
+		pool1.request() // or: new sql.Request(pool1)
+		.query("SELECT ChoreId, ChoreName FROM [Chores] ORDER BY ChoreId, ChoreName ASC", (err, result) => {
+			// ... error checks
+			data["Data"] = result.recordset;
+			res.json(data);
+		})
+	 
+	})
 });
 
 app.get('/getAllowance', function(req,res){
@@ -90,16 +42,16 @@ app.get('/getAllowance', function(req,res){
         "Data":""
     };
 
-	try {
-		var query = "SELECT AllowanceId, '$' + Convert(nVarchar(10),AllowanceValue) [AllowanceValue] FROM [Allowance]";
-		sql.query(connectionString, query, (err, rows) => {
-            data["Data"] = rows;
-            res.json(data);
-		});
-	} catch (err) {
-		// ... error checks
-		//console.log(err)
-	}    
+	const pool2 = new sql2.ConnectionPool(config, err => {
+		// Query
+		pool2.request() // or: new sql.Request(pool1)
+		.query("SELECT AllowanceId, '$' + Convert(nVarchar(10),AllowanceValue) [AllowanceValue] FROM [Allowance]", (err, result) => {
+			// ... error checks
+			data["Data"] = result.recordset;
+			res.json(data);
+		})
+	 
+	})
 });
 
 app.get('/getDays', function(req,res){
@@ -107,16 +59,15 @@ app.get('/getDays', function(req,res){
         "Data":""
     };
 
-	try {
-		var query = "SELECT [DayId] ,[Day] FROM [Chore].[dbo].[Days]";
-		sql.query(connectionString, query, (err, rows) => {
-            data["Data"] = rows;
-            res.json(data);
-		});
-	} catch (err) {
-		// ... error checks
-		//console.log(err)
-	}    
+	const pool3 = new sql2.ConnectionPool(config, err => {
+		// Query
+		pool3.request() // or: new sql.Request(pool1)
+		.query("SELECT [DayId] ,[Day] FROM [Days]", (err, result) => {
+			// ... error checks
+			data["Data"] = result.recordset;
+			res.json(data);
+		})
+	})	
 });
 
 app.get('/hasLogin', function(req,res){
@@ -126,128 +77,126 @@ app.get('/hasLogin', function(req,res){
 
 	try 
 	{
-		//console.log(req.query.id);
-		var query = "SELECT COUNT(1) [rowcount] FROM [FamilyAdmin] WHERE FBID = '" + req.query.id + "' ";
-		sql.query(connectionString, query, (err, rows) => {
-						data["Data"] = rows;
-						res.json(rows);
-		});
+		console.log(req.query.id);
+		const pool4 = new sql2.ConnectionPool(config, err => {
+			// Query
+			pool4.request() // or: new sql.Request(pool1)
+
+			.query("SELECT ISNULL((SELECT familyAdminId FROM FamilyAdmin WHERE FBID = '" + req.query.id + "'), -999) [familyAdminId] ", (err, result) => {
+				data["Data"] = result.recordset[0]["familyAdminId"];
+				res.json(data);
+			})
+		})
+
 	} catch (err) {
-	// ... error checks
-		console.log(err)
+		console.log("hasLogin: " + err)
 	} 	
 });
 
 app.get('/addRegistration', function(req,res){
-
-    // open connection
-    sql.open(connectionString, function (err, conn) {
-		var familyAdminIns = "INSERT INTO [FamilyAdmin] (FBID,FBEmail)VALUES('"+req.query.id+"','"+req.query.email+"')";
-
-		var familyIns = "INSERT INTO [Family] (FamilyName,FamilyAdminId) " +
-						"	VALUES('"+req.query.name+"'," +
-						"			(SELECT [FamilyAdminId] " + 
-						"			FROM [FamilyAdmin]  " +
-						"			WHERE FBID ='" + req.query.id + "'" +
-						"			AND FBEmail = '" + req.query.email + "'))";
-		console.log(familyIns);
-		
-		sql.query(connectionString, familyAdminIns, (err, rows) => {
-			console.log(err);
-			sql.query(connectionString, familyIns, (err, rows) => {
-				console.log(err);
-			});					
-		});		
-		
-
-    });
-});
-
-app.get('/addRegistration2', function(req,res){
-  var data = {
-			"Data":""
+	var data = {
+		"Data":""
 	};
-
 	try 
 	{
-		var query = "INSERT INTO [FamilyAdmin] (FBID,FBEmail)VALUES('"+FBID+"','"+FBEmail+"')";
-		sql.query(connectionString, query, (err, rows) => {
-						data["Data"] = rows;
-						res.json(data);
-		});
-
-		var query = "INSERT INTO [Family] (FamilyName,FamilyAdminId)VALUES('"+NAME+"','"+AdminID+"')";
-		sql.query(connectionString, query, (err, rows) => {
-						data["Data"] = rows;
-						res.json(data);
-		});
-
-		// var query = "INSERT INTO [Member] (FamilyId,MemberName, isAdmin)VALUES('"+FamilyID+"','"+NAME+"','" + true + "')";
-		// sql.query(connectionString, query, (err, rows) => {
-		// 				data["Data"] = rows;
-		// 				res.json(data);
-		// });
-
-
+		const pool5 = new sql2.ConnectionPool(config, err => 
+			{
+				// Stored Procedure
+				pool5.request()
+				.input('FBID', sql2.VarChar(250), req.query.id)
+				.input('FBEmail', sql2.VarChar(250), req.query.email)
+				.input('FBName', sql2.VarChar(250), req.query.memberName)
+				.input('FamilyName', sql2.VarChar(250), req.query.familyName)
+				.execute('sp_registerUser', (err, result) => 
+				{
+					data["Data"] = result.recordset[0];
+					// console.log(result.recordset);	
+					// console.log(result.recordset[0]);	
+					// console.log(data);	
+					res.json(data);
+				})
+			})
+		 pool5.on('error', err => {
+		 	console.log("Error");
+		 })
 	} catch (err) {
-	// ... error checks
-	//console.log(err)
-	} 	
+		console.log("addRegistration: " + err)
+	} 		
 });
 
-app.get('/getsLogin', function(req,res){
-  var data = {
-			"Data":""
-	};
-
-	try 
-	{
-		var query = "SELECT TOP 1 [FamilyId] FROM [FamilyEmailLogin] WHERE AdminEmailAddress LIKE '%jeff.vaccaro@live.com%'";
-		sql.query(connectionString, query, (err, rows) => {
-						data["Data"] = rows;
-						res.json(data);
-		});
-	} catch (err) {
-	// ... error checks
-	//console.log(err)
-	} 	
+app.get('/getFamily', function(req,res){
+	var data = {
+			  "Data":""
+	  };
+  
+	  try 
+	  {
+		  const pool6 = new sql2.ConnectionPool(config, err => {
+			  // Query
+			  pool6.request() // or: new sql.Request(pool1)
+			  .query("SELECT f.FamilyId, f.FamilyName, m.MemberName, m.MemberId, m.isAdmin FROM Family f INNER JOIN Member m ON f.familyId = m.FamilyId WHERE f.FamilyAdminId = '" + req.query.id + "' ", (err, result) => {
+				  data["Data"] = result.recordset;
+				  //console.log(data);
+				  res.json(data);
+			  })
+		  })
+  
+	  } catch (err) {
+	  // ... error checks
+		  console.log("hasLogin: " + err)
+	  } 	
 });
 
+app.get('/addMember', function(req,res){
+	var data = {
+			  "Data":""
+	  };
+  
+	  try 
+	  {
+		  const pool7 = new sql2.ConnectionPool(config, err => {
+			  // Query
+			  pool7.request()
+			  .query("INSERT INTO Member (FamilyId, MemberName, isAdmin)VALUES("+ req.query.familyId +",'" + req.query.memberName + "', '" + req.query.isAdmin + "') SELECT SCOPE_IDENTITY() as id", (err, result) => {
+				  data["Data"] = result.recordset;
+				  console.log(data);
+				  
+				  res.json(data);
+			  })
+		  })
+  
+	  } catch (err) {
+	  // ... error checks
+		  console.log("hasLogin: " + err)
+	  } 	
+});
 
-// function getUsers(){
-// 	try {
-// 		var query = "SELECT * FROM [USER]";
-// 		sql.query(connectionString, query, (err, rows) => {
-//             return rows;
-//             //console.log(rows);
-// 		});
-// 	} catch (err) {
-// 		// ... error checks
-// 		console.dir(err)
-// 	}
-// }
+app.get('/updateMember', function(req,res){
+	var data = {
+			  "Data":""
+	  };
 
-// function updateEmails(){
-// 	var query = "UPDATE [User] SET EMAIL = replace(EMAIL,'arapahoegov.com','accrediation.net')  WHERE email like '%@arapahoegov.com%'";
-//     // open connection
-//     sql.open(connectionString, function (err, conn) {
-//         //assert.ifError(err);
-//         // prepare a statement which can be re-used
-//         conn.prepare(query, function (e, ps) {
-//             // called back with a prepared statement
-//             console.log(ps.getMeta());
-//             // prepared query meta data avaialble to view
-//             //assert.ifError(err);
-//             // execute with expected paramater
-//             ps.preparedQuery([1], function(err, fetched) {
-//                 console.log(fetched);
-//                 // can call again with new parameters.
-//                 // note - free the statement when no longer used,
-//                 // else resources will be leaked.
-//                 ps.free(function() {
-//                     //done();
-//                 })
-//             });
-//         });
-//     });	
-// }
+	  try 
+	  {
+		  const pool8 = new sql2.ConnectionPool(config, err => {
+			  // Query
+			  pool8.request()
+			  .query("UPDATE Member SET MemberName = '" + req.query.memberName + "', isAdmin = '" + req.query.isAdmin + "' WHERE MemberId = " + req.query.memberId, (err, result) => {
+				  data["Data"] = "True";
+				  console.log(data);
+				  
+				  res.json(data);
+			  })
+		  })
+  
+	  } catch (err) {
+	  // ... error checks
+		  console.log("hasLogin: " + err)
+	  } 	
+});
+
+//Port 5000
+var server = app.listen(5000,function(){
+	console.log('listening at http://%s:%s',
+	server.address().address, server.address().port);
+});
