@@ -70,8 +70,6 @@ export default {
   created: function() {
       this.loadFBData();
   },
-  // mounted: function() {
-  // },  
   watch: {
     fbEmail: function() {
       var vm = this;
@@ -107,6 +105,12 @@ export default {
       }
       serverBus.$emit("addFamilyRowArray", vm.addFamilyRowArray);
     },
+    familyName: function(){
+      this.setFamilyName(this.familyName);
+    },
+    familyId: function(){
+      this.setFamilyId(this.familyId);
+    },
     registrationObj: function(){
       var vm = this;
       //console.log('FamilyAdminId is : ' + vm.registrationObj["Data"].FamilyAdminId);
@@ -130,9 +134,11 @@ export default {
     },
     getFamilyData: function(){
       var vm = this;
+
       axios
         .get("http://localhost:5000/getFamily?id="+ vm.familyAdminId["Data"])
-        .then(response => (vm.familyObj = response.data));
+        .then(response => (vm.familyObj = response.data))
+        .then(this.setMemberName(this.fbName));
     },      
     registerAccount: function() {
       var vm = this;

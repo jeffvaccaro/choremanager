@@ -122,7 +122,7 @@
         <div class="card">
           <div class="card-body">
             <h4 class="card-title text-left">
-              Custom Chores:
+              Chores for : {{familyName}}
             </h4>
             <table 
               class="table table-striped" 
@@ -141,7 +141,8 @@
                 <td>{{ addChoreRowItem.dayName }}</td>
                 <td>{{ addChoreRowItem.allowanceValue }}</td>
                 <td v-if="addChoreRowItem.isRepeat === true"><i class="fas fa-check fa-2x"/></td>
-                <td v-else-if="addChoreRowItem.isRepeat === ''"><i class="fas fa-times fa-2x"/></td>
+                <td v-else-if="addChoreRowItem.isRepeat === false"><i class="fas fa-times fa-2x"/></td>
+                <td v-else><i class="fas fa-times fa-2x"/></td>
                 <td>
                   <button 
                     type="button" 
@@ -159,7 +160,7 @@
               <button 
                 class='btn btn-default btn-outline-primary float-left' 
                 type="button" 
-                onclick="saveChores();">Save Chores locally</button>&nbsp;&nbsp;&nbsp;<span id="siteChoresMessage"/>
+                onclick="saveChores();" v-show="familyId == 0">Save Chores locally</button>&nbsp;&nbsp;&nbsp;<span id="siteChoresMessage"/>
             </span>
           </div>                    
         </div>
@@ -177,6 +178,8 @@
 <script>
 const axios = require('axios');
 import { serverBus } from "../main";
+import {mapState, mapGetters, mapMutations, mapActions} from 'vuex'
+
 export default {
     name: "AddChores",
     data: function() {
@@ -195,7 +198,12 @@ export default {
             frequency: [],
             frequencyVal: "",
             frequencyValId: "",
-            repeatable: ""
+            repeatable: "",
+            familyName: "",
+            familyId: 0,
+            returnId: [],
+            returnUpdated: '',
+            rawChoreReturn: []
         };
   },
   created: function() {
@@ -206,9 +214,32 @@ export default {
       .get("http://localhost:5000/getDays")
       .then(response => (this.frequency = response.data));
     axios
-      .get("http://localhost:5000/getChores")
+      .get("http://localhost:5000/getChores?familyId=")
       .then(response => (this.chores = response.data));
   },
+  computed: {
+    ...mapGetters([
+      'getFamilyName',
+      'getFamilyId'
+    ])
+  },  
+  watch: {
+    getFamilyName (newName, oldName) {
+      this.familyName = newName;
+    },
+    getFamilyId (newId, oldId) {
+      this.familyId = newId;
+
+    axios
+      .get("http://localhost:5000/getChores?familyId="+this.familyId)
+      .then(response => (this.chores = response.data));     
+
+    axios
+      .get("http://localhost:5000/getFamilyChores?familyId="+this.familyId)
+      .then(response => (this.rawChoreReturn = response.data))
+      .then(() => (this.addChoresFromDB()));         
+    }
+  },    
   methods: {
     toggleRepeat: function() {
         var vm = this;
@@ -237,6 +268,8 @@ export default {
     },
     addChoreRow: function() {
         var vm = this;
+        var addChoreRowObj;
+
         if (vm.customChoreValue === "") {
             var choreObj = findObjectByKey(vm.chores.Data,"ChoreId",vm.choreValId);
             vm.choreVal = choreObj.ChoreName;
@@ -250,9 +283,15 @@ export default {
             vm.choreVal = vm.customChoreValue;
         }
 
-        vm.addChoreRowIndex = vm.addChoreRowIndex + 1;
 
-        var addChoreRowObj = {
+        axios
+          .get("http://localhost:5000/addFamilyChore?familyId="+ vm.familyId+"&choreId="+vm.choreValId+'&dayId='+vm.frequencyValId+'&allowanceId='+vm.allowanceValId+'&isRepeatable='+vm.repeatable)
+          .then(response => (vm.returnId = response.data))
+          //.then(() => console.log(vm.returnId["Data"][0].id))
+          .then(() => (vm.addChoreRowIndex = vm.addChoreRowIndex + 1))
+          //.then(() => console.log(vm.memberId))
+          .then(() =>(
+            addChoreRowObj = {
             arrIndex: vm.addChoreRowIndex,
             choreId: vm.choreValId,
             choreName: vm.choreVal,
@@ -261,13 +300,39 @@ export default {
             isRepeat: vm.repeatable,
             allowanceId: vm.allowanceValId,
             allowanceValue: vm.allowanceVal
-        };
+            },
+            vm.addChoreRowArray.push(addChoreRowObj)
+          ))
+          .then(() => (vm.customChoreValue = "",
+                       vm.setDefaults()
+          ))
+          .then(() =>(serverBus.$emit("choresArr", vm.addChoreRowArray)));  
 
-        vm.addChoreRowArray.push(addChoreRowObj);
-        vm.customChoreValue = "";
 
-        vm.setDefaults();
+        // vm.addChoreRowIndex = vm.addChoreRowIndex + 1;
+
+        // var addChoreRowObj = {
+        //     arrIndex: vm.addChoreRowIndex,
+        //     choreId: vm.choreValId,
+        //     choreName: vm.choreVal,
+        //     dayId: vm.frequencyValId,
+        //     dayName: vm.frequencyVal,
+        //     isRepeat: vm.repeatable,
+        //     allowanceId: vm.allowanceValId,
+        //     allowanceValue: vm.allowanceVal
+        // };
+
+        // vm.addChoreRowArray.push(addChoreRowObj);
+        // vm.customChoreValue = "";
+
+        // vm.setDefaults();
         
+        // serverBus.$emit("choresArr", vm.addChoreRowArray);
+    },
+    addChoresFromDB: function(){
+        var vm = this;
+        vm.addChoreRowArray = vm.rawChoreReturn.Data;
+        vm.setDefaults();
         serverBus.$emit("choresArr", vm.addChoreRowArray);
     },
     removeChoreRow: function(indexVal) {

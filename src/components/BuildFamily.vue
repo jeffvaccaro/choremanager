@@ -106,7 +106,7 @@
                 <td>{{ addFamilyMemberRow.familyMemberName }}</td>
                 <td><i 
                   class="far fa-star" 
-                  v-show="addFamilyMemberRow.isParent == 'true'"/></td>
+                  v-show="addFamilyMemberRow.isParent === true"/></td>
                 <td>
                   <button 
                     type="button" 
@@ -186,19 +186,11 @@ export default {
   },  
   created: function() {
     // Using the service bus
-      serverBus.$on('familyId', (familyId) => {
-          this.familyId = familyId;
-      });
-      serverBus.$on('familyName', (familyName) => {
-          this.familyName = familyName;
-      });   
       serverBus.$on('addFamilyRowArray', (addFamilyRowArray) => {
           this.addFamilyRowArray = addFamilyRowArray;
           serverBus.$emit('familyArr', this.addFamilyRowArray); 
           this.addFamilyRowIndex = this.addFamilyRowArray.length;
       });            
-
-      //this.familyName = this.$store.state.familyName;
   },
 
    methods: {
@@ -221,7 +213,7 @@ export default {
                       familyName: vm.familyName,
                       familyMemberName: vm.memberName,
                       memberId: vm.memberId,
-                      isParent: vm.isParent.toString()},
+                      isParent: vm.isParent},
                       vm.addFamilyRowArray.push(addFamilyMemberRowObj)
                       ))
                   .then(() => (vm.memberName = "",
