@@ -147,7 +147,7 @@
                   <button 
                     type="button" 
                     class='btn btn-default btn-outline-primary' 
-                    @click="removeChoreRow(addChoreRowItem.arrIndex)">
+                    @click="removeChoreRow(addChoreRowItem.arrIndex,addChoreRowItem.familyChoreId)">
                     <i 
                       class="fas fa-trash-alt" 
                       aria-hidden="true"/>
@@ -201,6 +201,7 @@ export default {
             repeatable: "",
             familyName: "",
             familyId: 0,
+            familyChoreId: 0,
             returnId: [],
             returnUpdated: '',
             rawChoreReturn: []
@@ -287,12 +288,12 @@ export default {
         axios
           .get("http://localhost:5000/addFamilyChore?familyId="+ vm.familyId+"&choreId="+vm.choreValId+'&dayId='+vm.frequencyValId+'&allowanceId='+vm.allowanceValId+'&isRepeatable='+vm.repeatable)
           .then(response => (vm.returnId = response.data))
-          //.then(() => console.log(vm.returnId["Data"][0].id))
+          .then(() => (vm.familyChoreId =  vm.returnId["Data"][0].id))
           .then(() => (vm.addChoreRowIndex = vm.addChoreRowIndex + 1))
-          //.then(() => console.log(vm.memberId))
           .then(() =>(
             addChoreRowObj = {
             arrIndex: vm.addChoreRowIndex,
+            familyChoreId: familyChoreId,
             choreId: vm.choreValId,
             choreName: vm.choreVal,
             dayId: vm.frequencyValId,
@@ -335,8 +336,12 @@ export default {
         vm.setDefaults();
         serverBus.$emit("choresArr", vm.addChoreRowArray);
     },
-    removeChoreRow: function(indexVal) {
+    removeChoreRow: function(indexVal,familyChoreId) {
         var vm = this;
+        axios
+          .get("http://localhost:5000/removeChore?familyChoreId="+familyChoreId);         
+
+
         vm.addChoreRowArray = vm.addChoreRowArray.filter(
             item => item.arrIndex !== indexVal
         );

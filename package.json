@@ -24,7 +24,8 @@
     "popper": "^1.0.1",
     "vue": "^2.5.17",
     "vue-scrollto": "^2.13.0",
-    "vuew": "^1.0.0-security"
+    "vuew": "^1.0.0-security",
+    "vuex": "^3.0.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.0.1",
