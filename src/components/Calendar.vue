@@ -83,13 +83,15 @@ export default {
              var k = 0;
              for(i=0;i<=vm.assignedChores.length-1;i++){
                  for(j=0;j<=vm.choresArr.length-1;j++){
-                    if(vm.choresArr[j].arrIndex == vm.assignedChores[i].choreIndex){
+                    //if(vm.choresArr[j].arrIndex == vm.assignedChores[i].choreIndex){
+                    if(vm.choresArr[j].choreId == vm.assignedChores[i].choreId){
                         //console.log(vm.choresArr[j].choreName);
                         break;
                     }                        
                  }
                  for(k=0;k<=vm.familyArr.length-1;k++){
-                     if(vm.familyArr[k].arrIndex == vm.assignedChores[i].memberIndex){
+                     //if(vm.familyArr[k].arrIndex == vm.assignedChores[i].memberIndex){
+                     if(vm.familyArr[k].memberId == vm.assignedChores[i].memberId){
                          //console.log(vm.familyArr[k].familyMemberName);
                          break;
                      }

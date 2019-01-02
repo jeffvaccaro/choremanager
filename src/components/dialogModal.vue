@@ -39,9 +39,14 @@ $('body').on('shown.bs.modal', '.modal', function () {
 })
 
 const axios = require('axios');
+
+window.axios.defaults.headers.common = {'X-Requested-With': 'XMLHttpRequest'}
+window.axios.defaults.baseURL = (process.env.NODE_ENV !== 'production') ? 'http://localhost:5000/api/' : ''
+
 import { serverBus } from "../main";   
 import {mapState, mapGetters, mapMutations, mapActions} from 'vuex'
-//import $ from 'jquery';
+import { version } from 'fullcalendar';
+import $ from 'jquery';
 
 export default {
   name: 'Modal',
@@ -49,7 +54,8 @@ export default {
     ...mapGetters([
       'getFamilyName',
       'getFamilyId',
-      'getMemberName'
+      'getMemberName',
+      'getAssignedChoresArr'
     ]),
   },  
   data: function() {
@@ -64,7 +70,8 @@ export default {
       registrationObj: [],
       familyObj: [],
       addFamilyRowIndex:0,
-      addFamilyRowArray:[]      
+      addFamilyRowArray:[],
+      assignmentArray:[]    
     };
   },
   created: function() {
@@ -82,6 +89,7 @@ export default {
             $('#registerModal').modal('toggle');
         }else{
           vm.getFamilyData();
+          //vm.getFamilyChoreAssignments();
         }
     },
     familyObj: function(){
@@ -104,6 +112,12 @@ export default {
         vm.addFamilyRowArray.push(addFamilyMemberRowObj);
       }
       serverBus.$emit("addFamilyRowArray", vm.addFamilyRowArray);
+
+
+      axios
+        .get("http://localhost:5000/getAssignments?familyId="+vm.familyId)
+        .then(response => (this.assignmentArray = response.data))
+        .then(() => this.setAssignedChoresArr(this.assignmentArray.Data));
     },
     familyName: function(){
       this.setFamilyName(this.familyName);
@@ -122,9 +136,11 @@ export default {
     ...mapMutations(['SET_FAMILY_NAME']),
     ...mapMutations(['SET_FAMILY_ID']),
     ...mapMutations(['SET_MEMBER_NAME']),
+    ...mapMutations(['SET_ASSIGNED_CHORES_ARR']),
     ...mapActions(['setFamilyName']),
     ...mapActions(['setFamilyId']),
     ...mapActions(['setMemberName']),  
+    ...mapActions(['setAssignedChoresArr']),  
 
     showModal() {
       var vm = this;
@@ -139,7 +155,7 @@ export default {
         .get("http://localhost:5000/getFamily?id="+ vm.familyAdminId["Data"])
         .then(response => (vm.familyObj = response.data))
         .then(this.setMemberName(this.fbName));
-    },      
+    },     
     registerAccount: function() {
       var vm = this;
       axios

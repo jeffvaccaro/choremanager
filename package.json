@@ -1,6 +1,6 @@
 {
   "name": "choremanager",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "engines": {
     "node": "8.9.3"
   },
@@ -9,7 +9,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "start": "node src/server.js"
+    "start": "set NODE_ENV=production && node src/server.js"
   },
   "dependencies": {
     "axios": "^0.18.0",

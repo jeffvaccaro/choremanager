@@ -6,7 +6,8 @@ export default new Vuex.Store({
     state: {
         state_familyName: '',
         state_familyId: '',
-        state_memberName: ''
+        state_memberName: '',
+        state_assignedChoresArr: []
     },
     getters: {
         getFamilyName: state => {
@@ -17,6 +18,9 @@ export default new Vuex.Store({
         },
         getMemberName: state => {
             return state.state_memberName
+        },
+        getAssignedChoresArr: state => {
+            return state.state_assignedChoresArr
         }
     },
     mutations: {
@@ -28,7 +32,10 @@ export default new Vuex.Store({
         },
         SET_MEMBER_NAME: (state, memberName) => {
             state.state_memberName = memberName
-        }               
+        },
+        SET_ASSIGNED_CHORES_ARR: (state, arr) => {
+            state.state_assignedChoresArr.push(arr)
+        }
     },
     actions: {
         setFamilyName: (context, familyName) => {
@@ -36,9 +43,12 @@ export default new Vuex.Store({
         },
         setFamilyId: (context, familyId) => {
             context.commit("SET_FAMILY_ID", familyId)
-          },
+        },
         setMemberName: (context, memberName) => {
             context.commit("SET_MEMBER_NAME", memberName)
-        }                  
+        },
+        setAssignedChoresArr: (context, arr) => {
+            context.commit("SET_ASSIGNED_CHORES_ARR", arr)
+        }
       }
 })

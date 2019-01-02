@@ -266,6 +266,77 @@ app.get('/addCustomChore', function(req,res){
 			} 	
 	});
 
+	app.get('/removeFamilyMember', function(req,res){
+		var data = {"Data":""};
+		console.log("DELETE Member WHERE FamilyId="+req.query.familyId+" AND MemberId = "+ req.query.memberId);
+		try {
+			const pool14 = new sql2.ConnectionPool(config, err => {
+					pool14.request()
+					.query("DELETE Member WHERE FamilyId = "+ req.query.familyId + " AND MemberId = "+ req.query.memberId, (err, result) => {
+					data["Data"] = "True";
+					console.log("Member Deleted: " + data);
+					res.json(data);})
+			})
+		} catch (err) {
+			console.log("removeFamilyMember: " + err)
+		} 	
+	});	
+
+	app.get('/addAssignment', function(req,res){
+		var data = {"Data":""};
+		console.log("INSERT INTO Assignment (MemberId,ChoreId,AllowanceId)VALUES("+req.query.memberId+","+ req.query.choreId+","+req.query.allowanceId+")");
+		try {
+			const pool15 = new sql2.ConnectionPool(config, err => {
+					pool15.request()
+					.query("INSERT INTO Assignment (MemberId,ChoreId,AllowanceId)VALUES("+req.query.memberId+","+ req.query.choreId+","+req.query.allowanceId+")", (err, result) => {
+					data["Data"] = "True";
+					console.log("Assignment Added: " + data);
+					res.json(data);})
+			})
+		} catch (err) {
+			console.log("addAssignment: " + err)
+		} 	
+	});	
+
+	app.get('/removeAssignment', function(req,res){
+		var data = {"Data":""};
+		console.log("DELETE Assignment WHERE MemberId="+req.query.memberId+" AND ChoreId = "+req.query.choreId);
+		try {
+			const pool16 = new sql2.ConnectionPool(config, err => {
+					pool16.request()
+					.query("DELETE Assignment WHERE MemberId="+req.query.memberId+" AND ChoreId = "+req.query.choreId, (err, result) => {
+					data["Data"] = "True";
+					console.log("Assignment Removed " + data);
+					res.json(data);})
+			})
+		} catch (err) {
+			console.log("removeAssignment: " + err)
+		} 	
+	});	
+
+	app.get('/getAssignments', function(req,res){
+		var data = {"Data":""};
+		console.log("SELECT CONVERT(INT,ROW_NUMBER() OVER (ORDER BY a.AssignmentId)) [arrIndex], a.allowanceId, a.choreId, a.memberId " +
+					"FROM Assignment a " +
+					"INNER JOIN Member m on a.MemberId = m.MemberId " +
+					"INNER JOIN Family f ON m.FamilyId = f.FamilyId " +
+					"WHERE f.FamilyId = " + req.query.familyId);
+		try 
+		{
+			const pool17 = new sql2.ConnectionPool(config, err => {
+			pool17.request() // or: new sql.Request(pool1)
+			.query("SELECT CONVERT(INT,ROW_NUMBER() OVER (ORDER BY a.AssignmentId)) [arrIndex], a.allowanceId, a.choreId, a.memberId " +
+					"FROM Assignment a " +
+					"INNER JOIN Member m on a.MemberId = m.MemberId " +
+					"INNER JOIN Family f ON m.FamilyId = f.FamilyId " +
+					"WHERE f.FamilyId = " + req.query.familyId, (err, result) => {
+			data["Data"] = result.recordset;
+			res.json(data);})
+			})
+		} catch (err) {
+			console.log("getAssignments: " + err)
+		} 	
+	});	
 //Port 5000
 var server = app.listen(5000,function(){
 	console.log('listening at http://%s:%s',

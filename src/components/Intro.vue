@@ -23,15 +23,14 @@
               href="https://www.facebook.com/webdad3/" 
               target="_blank">webdad3 technologies</a> page on facebook!</li>
             <li>Tweet me at <a 
-              href="https://twitter.com/choremanager" 
-              target="_blank">@choremanager</a></li>
-            <li>or e-mail me at <a mailto="choremanager@webdad3.com">choremanager@webdad3.com</a></li>
+              href="https://twitter.com/webdad3" 
+              target="_blank">@webdad3</a></li>
           </ul>
         </h5>
         <br>
         <h5>
           Coming Soon: Ability to register using facebook, twitter or google & use your information on any device!
-          Recent Updates (v1.1) - You can now save your family & chores locally & bug fixes.
+          Recent Updates (v0.1) - You can now save your family & chores locally & bug fixes.
         </h5>
       </div>
       <div class="row clearfix">

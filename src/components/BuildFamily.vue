@@ -259,6 +259,12 @@ export default {
         },
         removeFamilyRow: function(arrIndex){
             var vm = this;
+            var memberObj = vm.addFamilyRowArray.find(item => item.arrIndex === arrIndex);
+                vm.memberId = memberObj.memberId;
+
+                axios
+                  .get("http://localhost:5000/removeFamilyMember?familyId="+ vm.familyId+"&memberId="+vm.memberId);
+
             vm.addFamilyRowArray = vm.addFamilyRowArray.filter((item) => item.arrIndex !== arrIndex);
             serverBus.$emit('familyArr', vm.addFamilyRowArray);
       },        
